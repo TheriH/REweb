@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Manage Listings & Agents</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f0f8f2;
+      color: #000;
+    }
+
+    header {
+      background-color: green;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h2 {
+      text-align: center;
+      margin-top: 30px;
+      font-size: 1.8em;
+      color: #2e8b57;
+    }
+
+    form {
+      background: white;
+      max-width: 700px;
+      margin: 30px auto;
+      padding: 25px 30px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: 600;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+
+    button {
+      margin-top: 20px;
+      background-color: #28a745;
+      color: white;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 30px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #1e7e34;
+    }
+
+    .listing, .agent {
+      background: white;
+      margin: 15px auto;
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 700px;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    .listing button, .agent button {
+      background-color: #dc3545;
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: none;
+      color: white;
+      font-weight: bold;
+      position: absolute;
+      right: 20px;
+      bottom: 20px;
+    }
+
+    .listing button:hover, .agent button:hover {
+      background-color: #bd2130;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Admin Dashboard</h1>
+  </header>
+
+  <h2>Add New Listing</h2>
+  <form id="listingForm">
+    <label>Location:</label>
+    <input type="text" id="location" required>
+
+    <label>Rooms:</label>
+    <input type="number" id="rooms" required>
+
+    <label>Listing Date:</label>
+    <input type="date" id="date" required>
+
+    <label>Agent Name:</label>
+    <input type="text" id="agent" required>
+
+    <label>Agent Contact:</label>
+    <input type="text" id="contact" required>
+
+    <label>Category:</label>
+    <select id="category">
+      <option value="Buy">Buy</option>
+      <option value="Rent">Rent</option>
+    </select>
+
+    <label>Available:</label>
+    <select id="available">
+      <option value="Available">Available</option>
+      <option value="Unavailable">Unavailable</option>
+    </select>
+
+    <label>Price:</label>
+    <input type="number" id="price" required>
+
+    <label>Upload Images:</label>
+    <input type="file" id="images" multiple accept="image/*">
+
+    <button type="submit">Add Listing</button>
+  </form>
+
+  <h2>Current Listings</h2>
+  <div id="listingContainer"></div>
+
+  <h2>Add New Agent</h2>
+  <form id="agentForm">
+    <label>Name:</label>
+    <input type="text" id="agentNameField" required>
+
+    <label>Phone:</label>
+    <input type="text" id="agentPhone" required>
+
+    <label>Email:</label>
+    <input type="email" id="agentEmail" required>
+
+    <label>District:</label>
+    <select id="agentDistrict">
+      <option value="Berea">Berea</option>
+      <option value="Butha-Buthe">Butha-Buthe</option>
+      <option value="Leribe">Leribe</option>
+      <option value="Mafeteng">Mafeteng</option>
+      <option value="Maseru">Maseru</option>
+      <option value="Mohale's Hoek">Mohale's Hoek</option>
+      <option value="Mokhotlong">Mokhotlong</option>
+      <option value="Qacha's Nek">Qacha's Nek</option>
+      <option value="Quthing">Quthing</option>
+      <option value="Thaba-Tseka">Thaba-Tseka</option>
+    </select>
+
+    <button type="submit">Add Agent</button>
+  </form>
+
+  <h2>Current Agents</h2>
+  <div id="agentContainer"></div>
+
+  <script>
+    let listings = JSON.parse(localStorage.getItem('listings')) || [];
+    let agents = JSON.parse(localStorage.getItem('agents')) || [];
+
+    function renderListings() {
+      const container = document.getElementById('listingContainer');
+      container.innerHTML = '';
+      listings.forEach((listing, index) => {
+        const div = document.createElement('div');
+        div.className = 'listing';
+        div.innerHTML = `
+          <strong>Location:</strong> ${listing.location}<br>
+          <strong>Rooms:</strong> ${listing.rooms}<br>
+          <strong>Date:</strong> ${listing.date}<br>
+          <strong>Agent:</strong> ${listing.agent}<br>
+          <strong>Contact:</strong> ${listing.contact}<br>
+          <strong>Category:</strong> ${listing.category}<br>
+          <strong>Available:</strong> ${listing.available}<br>
+          <strong>Price:</strong> ${listing.price}<br>
+          <strong>Images:</strong> ${listing.images.map(url => `<a href="${url}" target="_blank">View</a>`).join(', ')}<br>
+          <button onclick="deleteListing(${index})">Delete</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function deleteListing(index) {
+      listings.splice(index, 1);
+      localStorage.setItem('listings', JSON.stringify(listings));
+      renderListings();
+    }
+
+    document.getElementById('listingForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const fileInput = document.getElementById('images');
+      const files = fileInput ? Array.from(fileInput.files) : [];
+      const imageUrls = files.map(file => URL.createObjectURL(file));
+
+      const newListing = {
+        location: document.getElementById('location').value,
+        rooms: document.getElementById('rooms').value,
+        date: document.getElementById('date').value,
+        agent: document.getElementById('agent').value,
+        contact: document.getElementById('contact').value,
+        category: document.getElementById('category').value,
+        available: document.getElementById('available').value,
+        price: document.getElementById('price').value,
+        images: imageUrls
+      };
+      listings.push(newListing);
+      localStorage.setItem('listings', JSON.stringify(listings));
+      renderListings();
+      this.reset();
+    });
+
+    function renderAgents() {
+      const container = document.getElementById('agentContainer');
+      container.innerHTML = '';
+      agents.forEach((agent, index) => {
+        const div = document.createElement('div');
+        div.className = 'agent';
+        div.innerHTML = `
+          <strong>Name:</strong> ${agent.name}<br>
+          <strong>Phone:</strong> ${agent.phone}<br>
+          <strong>Email:</strong> ${agent.email}<br>
+          <strong>District:</strong> ${agent.district}<br>
+          <button onclick="deleteAgent(${index})">Delete</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function deleteAgent(index) {
+      agents.splice(index, 1);
+      localStorage.setItem('agents', JSON.stringify(agents));
+      renderAgents();
+    }
+
+    document.getElementById('agentForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const newAgent = {
+        name: document.getElementById('agentNameField').value,
+        phone: document.getElementById('agentPhone').value,
+        email: document.getElementById('agentEmail').value,
+        district: document.getElementById('agentDistrict').value
+      };
+      agents.push(newAgent);
+      localStorage.setItem('agents', JSON.stringify(agents));
+      renderAgents();
+      this.reset();
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('listingForm').reset();
+      document.getElementById('agentForm').reset();
+      renderListings();
+      renderAgents();
+    });
+  </script>
+</body>
+</html>
